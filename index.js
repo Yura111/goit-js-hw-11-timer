@@ -1,44 +1,75 @@
 class CountdownTimer {
-    constructor({ selector, targetDate }) {
-      this.selector = document.querySelector(selector);
-      this.targetDate = targetDate;
-  
-      this.refs = {
-        fieldDays: this.selector.querySelector('span[data-value="days"]'),
-        fieldHours: this.selector.querySelector('span[data-value="hours"]'),
-        fieldMins: this.selector.querySelector('span[data-value="mins"]'),
-        fieldSecs: this.selector.querySelector('span[data-value="secs"]')
+  constructor({ selector, targetDate }) {
+    this.selector = selector;
+    this.targetDate = targetDate;
+    this.refs = {
+      daysSpan: document.querySelector('span[data-value="days"]'),
+      hoursSpan: document.querySelector('span[data-value="hours"]'),
+      minutesSpan: document.querySelector('span[data-value="mins"]'),
+      secondsSpan: document.querySelector('span[data-value="secs"]'),
+    };
+
+    this.startTimer = function() {
+      const remainingTime =
+        Date.parse(this.targetDate) - Date.parse(new Date());
+      const convertedRemainingData = this.convertTimeStandartValues(
+        remainingTime,
+      );
+      this.updateFrontRepresentation(convertedRemainingData);
+    };
+
+    this.convertTimeStandartValues = function(remainingTimeInMilliseconds) {
+      const secs = Math.floor(
+        (remainingTimeInMilliseconds % (1000 * 60)) / 1000,
+      );
+      const mins = Math.floor(
+        (remainingTimeInMilliseconds % (1000 * 60 * 60)) / (1000 * 60),
+      );
+      const hours = Math.floor(
+        (remainingTimeInMilliseconds % (1000 * 60 * 60 * 24)) /
+          (1000 * 60 * 60),
+      );
+      const days = Math.floor(
+        remainingTimeInMilliseconds / (1000 * 60 * 60 * 24),
+      );
+      return {
+        remainingTime: remainingTimeInMilliseconds,
+        days: days,
+        hours: hours,
+        minutes: mins,
+        seconds: secs,
       };
-  
-      this.updateTimer();
-    }
-    updateTimer() {
-      this.timerId = setInterval(() => {
-        this.startTime = Date.now();
-        this.deltaTime = this.targetDate.getTime() - this.startTime;
-  
-        this.days = String(
-          Math.floor(this.deltaTime / (1000 * 60 * 60 * 24))
-        ).padStart(2, "0");
-        this.hours = String(
-          Math.floor((this.deltaTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        ).padStart(2, "0");
-        this.mins = String(
-          Math.floor((this.deltaTime % (1000 * 60 * 60)) / (1000 * 60))
-        ).padStart(2, "0");
-        this.secs = String(
-          Math.floor((this.deltaTime % (1000 * 60)) / 1000)
-        ).padStart(2, "0");
-  
-        this.refs.fieldDays.textContent = this.days;
-        this.refs.fieldHours.textContent = this.hours;
-        this.refs.fieldMins.textContent = this.mins;
-        this.refs.fieldSecs.textContent = this.secs;
+    };
+
+    this.updateFrontRepresentation = function(convertRemainingTimeData) {
+      let tmpRamainingDataObj = convertRemainingTimeData;
+      let intervalId = setInterval(() => {
+        (this.refs.daysSpan.innerHTML = this.pad(tmpRamainingDataObj.days)),
+          (this.refs.hoursSpan.innerHTML = this.pad(tmpRamainingDataObj.hours)),
+          (this.refs.minutesSpan.innerHTML = this.pad(tmpRamainingDataObj.minutes)),
+          (this.refs.secondsSpan.innerHTML = this.pad(tmpRamainingDataObj.seconds));
+
+        tmpRamainingDataObj = this.convertTimeStandartValues(
+          tmpRamainingDataObj.remainingTime - 1000,
+        );
+
+        if (tmpRamainingDataObj.remainingTime < 0) {
+          clearInterval(intervalId);
+        }
       }, 1000);
-    }
+    };
+
+    this.pad = function(value) {
+      return String(value).padStart(2, '0');
+    };
   }
-  
-  new CountdownTimer({
-    selector: "#timer-1",
-    targetDate: new Date("October 20, 2020")
-  });
+}
+
+
+
+let timer01 = new CountdownTimer({
+  selector: '#timer-1',
+  targetDate: new Date('october 20, 2020'),
+});
+
+timer01.startTimer();
